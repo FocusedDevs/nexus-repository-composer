@@ -1,0 +1,21 @@
+services:
+  nexus:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: nexus-repository-composer
+    ports:
+      - "8081:8081"
+    volumes:
+      - "./nexus-data:/nexus-data"
+  composer:
+    image: composer/composer
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    command: /bin/bash
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    depends_on:
+      nexus:
+        condition: service_started
