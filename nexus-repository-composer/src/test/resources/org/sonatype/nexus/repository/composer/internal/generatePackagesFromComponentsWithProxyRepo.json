@@ -1,0 +1,13 @@
+{
+  "providers-url": "http://nexus.repo/base/repo/p/%package%.json",
+  "metadata-url": "http://nexus.repo/base/repo/p2/%package%.json",
+  "search": "https://packagist.org/search.json?q=%query%&type=%type%",
+  "providers": {
+    "vendor1/project1": {
+      "sha256": null
+    },
+    "vendor2/project2": {
+      "sha256": null
+    }
+  }
+}
