@@ -44,7 +44,6 @@ public class ComposerMaintenanceFacetTest
 
   private static final String PROJECT = "test-project";
   private static final String ZIPBALL_PATH = "/" + VENDOR + "/" + PROJECT + "/1.0.0/" + VENDOR + "-" + PROJECT + "-1.0.0.zip";
-  private static final String PROVIDER_PATH = "/p/" + VENDOR + "/" + PROJECT + ".json";
   private static final String PACKAGE_PATH = "/p2/" + VENDOR + "/" + PROJECT + ".json";
 
 
@@ -96,7 +95,6 @@ public class ComposerMaintenanceFacetTest
   @Test
   public void testDeleteComponent() throws IOException {
     when(hostedFacet.rebuildPackageJson(VENDOR, PROJECT)).thenReturn(Optional.of(content));
-    when(hostedFacet.rebuildProviderJson(VENDOR, PROJECT)).thenReturn(Optional.of(content));
 
     Set<String> deletedPaths = underTest.deleteComponent(component);
     assertEquals(singleton(ZIPBALL_PATH), deletedPaths);
@@ -105,9 +103,8 @@ public class ComposerMaintenanceFacetTest
   @Test
   public void testDeleteComponentLast() throws IOException {
     when(hostedFacet.rebuildPackageJson(VENDOR, PROJECT)).thenReturn(Optional.empty());
-    when(hostedFacet.rebuildProviderJson(VENDOR, PROJECT)).thenReturn(Optional.empty());
 
     Set<String> deletedPaths = underTest.deleteComponent(component);
-    assertEquals(new HashSet<>(Arrays.asList(ZIPBALL_PATH, PROVIDER_PATH, PACKAGE_PATH)), deletedPaths);
+    assertEquals(new HashSet<>(Arrays.asList(ZIPBALL_PATH, PACKAGE_PATH)), deletedPaths);
   }
 }

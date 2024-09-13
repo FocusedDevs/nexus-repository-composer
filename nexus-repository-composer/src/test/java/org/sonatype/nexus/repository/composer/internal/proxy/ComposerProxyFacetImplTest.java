@@ -123,21 +123,6 @@ public class ComposerProxyFacetImplTest
   }
 
   @Test
-  public void getCachedContentProvider() throws Exception {
-    when(contextAttributes.require(AssetKind.class)).thenReturn(PROVIDER);
-    when(contextAttributes.require(TokenMatcher.State.class)).thenReturn(state);
-
-    when(composerContentFacet.get(PROVIDER_PATH)).thenReturn(Optional.of(content));
-
-    when(state.getTokens()).thenReturn(new ImmutableMap.Builder<String, String>()
-        .put("vendor", "vendor")
-        .put("project", "project")
-        .build());
-
-    assertThat(underTest.getCachedContent(context), is(content));
-  }
-
-  @Test
   public void getCachedContentZipball() throws Exception {
     when(contextAttributes.require(AssetKind.class)).thenReturn(ZIPBALL);
     when(contextAttributes.require(TokenMatcher.State.class)).thenReturn(state);
@@ -170,21 +155,6 @@ public class ComposerProxyFacetImplTest
     underTest.indicateVerified(context, content, cacheInfo);
 
     verify(composerContentFacet).setCacheInfo(LIST_PATH, content, cacheInfo);
-  }
-
-  @Test
-  public void indicateVerifiedProvider() throws Exception {
-    when(contextAttributes.require(TokenMatcher.State.class)).thenReturn(state);
-    when(contextAttributes.require(AssetKind.class)).thenReturn(PROVIDER);
-
-    when(state.getTokens()).thenReturn(new ImmutableMap.Builder<String, String>()
-        .put("vendor", "vendor")
-        .put("project", "project")
-        .build());
-
-    underTest.indicateVerified(context, content, cacheInfo);
-
-    verify(composerContentFacet).setCacheInfo(PROVIDER_PATH, content, cacheInfo);
   }
 
   @Test
@@ -225,23 +195,6 @@ public class ComposerProxyFacetImplTest
     assertThat(underTest.store(context, content), is(content));
 
     verify(composerContentFacet).put(LIST_PATH, content, LIST);
-  }
-
-  @Test
-  public void storeProvider() throws Exception {
-    when(contextAttributes.require(AssetKind.class)).thenReturn(PROVIDER);
-    when(contextAttributes.require(TokenMatcher.State.class)).thenReturn(state);
-
-    when(composerContentFacet.put(PROVIDER_PATH, content, PROVIDER)).thenReturn(fluentAsset);
-
-    when(state.getTokens()).thenReturn(new ImmutableMap.Builder<String, String>()
-        .put("vendor", "vendor")
-        .put("project", "project")
-        .build());
-
-    assertThat(underTest.store(context, content), is(content));
-
-    verify(composerContentFacet).put(PROVIDER_PATH, content, PROVIDER);
   }
 
   @Test
@@ -303,23 +256,5 @@ public class ComposerProxyFacetImplTest
         .build());
 
     assertThat(underTest.getUrl(context), is("distUrl"));
-  }
-
-  @Test(expected = ComposerProxyFacet.NonResolvableProviderJsonException.class)
-  public void getUrlZipballMissingProviderJson() throws Exception {
-    when(contextAttributes.require(AssetKind.class)).thenReturn(ZIPBALL);
-    when(contextAttributes.require(TokenMatcher.State.class)).thenReturn(state);
-
-    when(viewFacet.dispatch(any(Request.class), eq(context))).thenReturn(response);
-    when(response.getPayload()).thenReturn(null);
-
-    when(state.getTokens()).thenReturn(new ImmutableMap.Builder<String, String>()
-        .put("vendor", "vendor")
-        .put("project", "project")
-        .put("version", "version")
-        .put("name", "project-version")
-        .build());
-
-    underTest.getUrl(context);
   }
 }

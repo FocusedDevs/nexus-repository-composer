@@ -132,11 +132,11 @@ abstract class ComposerRecipeSupport
         ))
   }
 
-  static Builder providerMatcher() {
+  static Builder searchMatcher() {
     new Builder().matcher(
         LogicMatchers.and(
             new ActionMatcher(GET, HEAD),
-            new TokenMatcher('/p/{vendor:.+}/{project:.+}.json')
+            new LiteralMatcher('/search.json')
         ))
   }
 
