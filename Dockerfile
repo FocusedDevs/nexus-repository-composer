@@ -4,6 +4,8 @@ ARG NEXUS_VERSION=latest
 
 FROM maven:3.9-amazoncorretto-17 AS build
 
+RUN yum install -y git
+
 COPY . /nexus-repository-composer/
 RUN cd /nexus-repository-composer/; \
     mvn clean package -PbuildKar;
