@@ -37,6 +37,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64 #,linux/arm64
+          platforms: linux/arm64
           push: true
           tags: ghcr.io/focuseddevs/nexus-repository-composer:${{ github.actor }}-${{ github.ref_name }}-${{ github.run_number }}
