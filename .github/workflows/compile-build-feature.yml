@@ -17,6 +17,32 @@ on:
       - '!master'
 
 jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          server-id: github
+          settings-path: ${{ github.workspace }}
+
+      - name: Publish to GitHub Packages Maven
+        run: mvn clean package deploy -PbuildKar -s $GITHUB_WORKSPACE/settings.xml # mvn deploy:deploy-file -Dfile=nexus-repository-composer/target/nexus-repository-composer-0.1.0-SNAPSHOT-bundle.kar -DgroupId=org.sonatype.nexus.plugins -DartifactId=nexus-repository-composer -Dversion=0.1.0-SNAPSHOT -Dpackaging=kar -DrepositoryId=github -Durl=https://maven.pkg.github.com/focuseddevs/nexus-repository-composer -s $GITHUB_WORKSPACE/settings.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build:
     runs-on: ubuntu-latest
     

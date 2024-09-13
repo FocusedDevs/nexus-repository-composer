@@ -36,8 +36,8 @@
   </scm>
   <distributionManagement>
     <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <id>github</id>
+      <url>https://maven.pkg.github.com/focuseddevs/nexus-repository-composer</url>
     </snapshotRepository>
   </distributionManagement>
 
