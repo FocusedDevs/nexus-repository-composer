@@ -27,6 +27,7 @@ import org.sonatype.nexus.repository.content.fluent.FluentAsset;
 import org.sonatype.nexus.repository.content.fluent.FluentComponent;
 import org.sonatype.nexus.repository.content.fluent.FluentComponents;
 import org.sonatype.nexus.repository.content.fluent.FluentQuery;
+import org.sonatype.nexus.repository.types.ProxyType;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.Payload;
@@ -92,6 +93,10 @@ public class ComposerJsonProcessor
   private static final String PROVIDERS_URL_KEY = "providers-url";
 
   private static final String METADATA_URL_KEY = "metadata-url";
+
+  private static final String SEARCH_KEY = "search";
+
+  private static final String SEARCH_URL = "https://packagist.org/search.json?q=%query%&type=%type%";
 
   private static final String PROVIDERS_KEY = "providers";
 
@@ -192,6 +197,11 @@ public class ComposerJsonProcessor
     Map<String, Object> packagesJson = new LinkedHashMap<>();
     packagesJson.put(PROVIDERS_URL_KEY, repository.getUrl() + PACKAGE_JSON_PATH);
     packagesJson.put(METADATA_URL_KEY, repository.getUrl() + PACKAGE_V2_JSON_PATH);
+
+    if (Objects.equals(repository.getType().getValue(), ProxyType.NAME)) {
+      packagesJson.put(SEARCH_KEY, SEARCH_URL);
+    }
+
     packagesJson.put(PROVIDERS_KEY, names.stream()
         .collect(Collectors.toMap((each) -> each, (each) -> singletonMap(SHA256_KEY, null))));
     return new Content(new StringPayload(mapper.writeValueAsString(packagesJson), ContentTypes.APPLICATION_JSON));
