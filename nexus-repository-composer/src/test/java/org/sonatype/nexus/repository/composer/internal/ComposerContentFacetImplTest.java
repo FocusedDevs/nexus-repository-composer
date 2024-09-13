@@ -221,11 +221,6 @@ public class ComposerContentFacetImplTest
   }
 
   @Test
-  public void putProviderJson() throws Exception {
-    testPutOrUpdate(PROVIDER, PROVIDER_PATH);
-  }
-
-  @Test
   @Ignore("versionNormalizerService() not mocked")
   public void putZipball() throws Exception {
     testPutOrUpdate(ZIPBALL, ZIPBALL_PATH);

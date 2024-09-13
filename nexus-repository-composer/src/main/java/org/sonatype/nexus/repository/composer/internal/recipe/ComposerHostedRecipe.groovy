@@ -37,6 +37,7 @@ import static org.sonatype.nexus.repository.composer.AssetKind.LIST
 import static org.sonatype.nexus.repository.composer.AssetKind.PACKAGE
 import static org.sonatype.nexus.repository.composer.AssetKind.PACKAGES
 import static org.sonatype.nexus.repository.composer.AssetKind.PROVIDER
+import static org.sonatype.nexus.repository.composer.AssetKind.SEARCH
 import static org.sonatype.nexus.repository.composer.AssetKind.ZIPBALL
 
 /**
@@ -107,16 +108,15 @@ class ComposerHostedRecipe
         .handler(downloadHandler)
         .create())
 
-    builder.route(providerMatcher()
+    builder.route(searchMatcher()
         .handler(timingHandler)
-        .handler(assetKindHandler.rcurry(PROVIDER))
+        .handler(assetKindHandler.rcurry(SEARCH))
         .handler(securityHandler)
         .handler(exceptionHandler)
         .handler(handlerContributor)
         .handler(conditionalRequestHandler)
         .handler(partialFetchHandler)
         .handler(contentHeadersHandler)
-        .handler(lastDownloadedHandler)
         .handler(downloadHandler)
         .create())
 

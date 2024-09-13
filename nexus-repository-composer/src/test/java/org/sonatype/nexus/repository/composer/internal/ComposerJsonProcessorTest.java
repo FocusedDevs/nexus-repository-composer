@@ -240,24 +240,6 @@ public class ComposerJsonProcessorTest
   }
 
   @Test
-  public void mergeProviderJson() throws Exception {
-    OffsetDateTime time = OffsetDateTime.of(2008, 5, 15, 12, 30, 0, 0, ZoneOffset.ofHours(-4));
-
-    String inputJson1 = readStreamToString(getClass().getResourceAsStream("mergeProviderJson.input1.json"));
-    String inputJson2 = readStreamToString(getClass().getResourceAsStream("mergeProviderJson.input2.json"));
-    String outputJson = readStreamToString(getClass().getResourceAsStream("mergeProviderJson.output.json"));
-
-    when(repository.getUrl()).thenReturn("http://nexus.repo/base/repo");
-    when(payload1.openInputStream()).thenReturn(new ByteArrayInputStream(inputJson1.getBytes(UTF_8)));
-    when(payload2.openInputStream()).thenReturn(new ByteArrayInputStream(inputJson2.getBytes(UTF_8)));
-
-    ComposerJsonProcessor underTest = new ComposerJsonProcessor(composerJsonExtractor, composerJsonMinifier);
-    Payload output = underTest.mergeProviderJson(repository, Arrays.asList(payload1, payload2), time);
-
-    assertEquals(outputJson, readStreamToString(output.openInputStream()), true);
-  }
-
-  @Test
   public void buildProviderJson() throws Exception {
     String outputJson = readStreamToString(getClass().getResourceAsStream("buildProviderJson.json"));
 

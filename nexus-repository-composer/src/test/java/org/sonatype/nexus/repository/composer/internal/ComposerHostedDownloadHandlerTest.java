@@ -100,28 +100,6 @@ public class ComposerHostedDownloadHandlerTest
   }
 
   @Test
-  public void testHandleProvider() throws Exception {
-    when(attributes.require(AssetKind.class)).thenReturn(PROVIDER);
-    when(tokens.get(VENDOR_TOKEN)).thenReturn(VENDOR);
-    when(tokens.get(PROJECT_TOKEN)).thenReturn(PROJECT);
-    when(composerHostedFacet.getProviderJson(VENDOR, PROJECT)).thenReturn(content);
-    Response response = underTest.handle(context);
-    assertThat(response.getStatus().getCode(), is(200));
-    assertThat(response.getPayload(), is(content));
-  }
-
-  @Test
-  public void testHandleProviderAbsent() throws Exception {
-    when(attributes.require(AssetKind.class)).thenReturn(PROVIDER);
-    when(tokens.get(VENDOR_TOKEN)).thenReturn(VENDOR);
-    when(tokens.get(PROJECT_TOKEN)).thenReturn(PROJECT);
-    when(composerHostedFacet.getProviderJson(VENDOR, PROJECT)).thenReturn(null);
-    Response response = underTest.handle(context);
-    assertThat(response.getStatus().getCode(), is(404));
-    assertThat(response.getPayload(), is(nullValue()));
-  }
-
-  @Test
   public void testHandlePackage() throws Exception {
     when(attributes.require(AssetKind.class)).thenReturn(PACKAGE);
     when(tokens.get(VENDOR_TOKEN)).thenReturn(VENDOR);
@@ -131,18 +109,6 @@ public class ComposerHostedDownloadHandlerTest
     assertThat(response.getStatus().getCode(), is(200));
     assertThat(response.getPayload(), is(content));
   }
-
-  @Test
-  public void testHandlePackageAbsent() throws Exception {
-    when(attributes.require(AssetKind.class)).thenReturn(PACKAGE);
-    when(tokens.get(VENDOR_TOKEN)).thenReturn(VENDOR);
-    when(tokens.get(PROJECT_TOKEN)).thenReturn(PROJECT);
-    when(composerHostedFacet.getProviderJson(VENDOR, PROJECT)).thenReturn(null);
-    Response response = underTest.handle(context);
-    assertThat(response.getStatus().getCode(), is(404));
-    assertThat(response.getPayload(), is(nullValue()));
-  }
-
 
   @Test
   public void testHandleList() throws Exception {

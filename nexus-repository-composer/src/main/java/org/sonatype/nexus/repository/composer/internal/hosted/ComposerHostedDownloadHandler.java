@@ -49,8 +49,8 @@ public class ComposerHostedDownloadHandler
         return HttpResponses.ok(hostedFacet.getPackagesJson());
       case LIST:
         return responseFor(hostedFacet.getListJson(context.getRequest().getParameters().get("filter")));
-      case PROVIDER:
-        return responseFor(hostedFacet.getProviderJson(getVendorToken(context), getProjectToken(context)));
+      case SEARCH:
+        return responseFor(hostedFacet.getSearchJson(context.getRequest().getParameters().get("filter")));
       case PACKAGE:
         return responseFor(hostedFacet.getPackageJson(getVendorToken(context), getProjectToken(context)));
       case ZIPBALL:

@@ -134,7 +134,6 @@ public class ComposerHostedUploadHandler
 
     hostedFacet.upload(vendor, project, version, sourceType, sourceUrl, sourceRef, payload);
 
-    hostedFacet.rebuildProviderJson(vendor, project);
     hostedFacet.rebuildPackageJson(vendor, project);
 
     return HttpResponses.ok();
@@ -157,7 +156,6 @@ public class ComposerHostedUploadHandler
 
     FluentAsset asset = hostedFacet.upload(vendor, project, version, null, null, null, payload);
 
-    hostedFacet.rebuildProviderJson(vendor, project);
     hostedFacet.rebuildPackageJson(vendor, project);
 
     return new UploadResponse(singletonList(asset.path()));

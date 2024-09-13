@@ -79,7 +79,7 @@ public class ComposerContentFacetImpl
         case PACKAGES:
         case PACKAGE:
         case LIST:
-        case PROVIDER:
+        case SEARCH:
           return findOrCreateMetadataAsset(path, tempBlob, assetKind);
         default:
           throw new IllegalStateException("Unexpected asset kind: " + assetKind);
