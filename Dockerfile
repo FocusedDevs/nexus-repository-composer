@@ -4,13 +4,11 @@ ARG NEXUS_VERSION=latest
 
 FROM maven:3-jdk-8-alpine AS build
 
-RUN apk add git
-
 COPY . /nexus-repository-composer/
 RUN cd /nexus-repository-composer/; \
     mvn clean package -PbuildKar;
 
-FROM ghcr.io/focuseddevs/nexus3:latest
+FROM sonatype/nexus3:$NEXUS_VERSION
 
 ARG DEPLOY_DIR=/opt/sonatype/nexus/deploy/
 USER root
