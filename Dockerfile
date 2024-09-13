@@ -2,9 +2,9 @@
 # see: https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG NEXUS_VERSION=latest
 
-FROM maven:3-jdk-8-alpine AS build
+FROM maven:3-amazoncorretto-17 AS build
 
-RUN apk add git
+RUN yum install -y git
 
 COPY . /nexus-repository-composer/
 RUN cd /nexus-repository-composer/; \
