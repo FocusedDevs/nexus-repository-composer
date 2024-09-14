@@ -20,10 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.sonatype.nexus.repository.cache.CacheControllerHolder.CONTENT;
 import static org.sonatype.nexus.repository.cache.CacheControllerHolder.METADATA;
-import static org.sonatype.nexus.repository.composer.AssetKind.LIST;
-import static org.sonatype.nexus.repository.composer.AssetKind.PACKAGES;
-import static org.sonatype.nexus.repository.composer.AssetKind.PROVIDER;
-import static org.sonatype.nexus.repository.composer.AssetKind.ZIPBALL;
+import static org.sonatype.nexus.repository.composer.AssetKind.*;
 
 public class AssetKindTest
     extends TestSupport
@@ -31,7 +28,6 @@ public class AssetKindTest
   @Test
   public void cacheTypes() {
     assertThat(LIST.getCacheType(), is(METADATA));
-    assertThat(PROVIDER.getCacheType(), is(METADATA));
     assertThat(PACKAGES.getCacheType(), is(METADATA));
     assertThat(ZIPBALL.getCacheType(), is(CONTENT));
   }

@@ -15,6 +15,7 @@ package org.sonatype.nexus.repository.composer.internal.recipe
 import org.sonatype.nexus.repository.composer.ComposerFormat
 import org.sonatype.nexus.repository.composer.internal.hosted.ComposerHostedDownloadHandler
 import org.sonatype.nexus.repository.composer.ComposerHostedFacet
+import org.sonatype.nexus.repository.composer.internal.hosted.ComposerHostedSearchHandler
 import org.sonatype.nexus.repository.composer.internal.hosted.ComposerHostedUploadHandler
 import org.sonatype.nexus.repository.view.handlers.LastDownloadedHandler
 
@@ -37,6 +38,7 @@ import static org.sonatype.nexus.repository.composer.AssetKind.LIST
 import static org.sonatype.nexus.repository.composer.AssetKind.PACKAGE
 import static org.sonatype.nexus.repository.composer.AssetKind.PACKAGES
 import static org.sonatype.nexus.repository.composer.AssetKind.PROVIDER
+import static org.sonatype.nexus.repository.composer.AssetKind.SEARCH
 import static org.sonatype.nexus.repository.composer.AssetKind.ZIPBALL
 
 /**
@@ -60,6 +62,9 @@ class ComposerHostedRecipe
 
   @Inject
   ComposerHostedDownloadHandler downloadHandler
+
+  @Inject
+  ComposerHostedSearchHandler searchHandler
 
   @Inject
   ComposerHostedRecipe(@Named(HostedType.NAME) final Type type, @Named(ComposerFormat.NAME) final Format format) {
@@ -107,17 +112,16 @@ class ComposerHostedRecipe
         .handler(downloadHandler)
         .create())
 
-    builder.route(providerMatcher()
+    builder.route(searchMatcher()
         .handler(timingHandler)
-        .handler(assetKindHandler.rcurry(PROVIDER))
+        .handler(assetKindHandler.rcurry(SEARCH))
         .handler(securityHandler)
         .handler(exceptionHandler)
         .handler(handlerContributor)
         .handler(conditionalRequestHandler)
         .handler(partialFetchHandler)
         .handler(contentHeadersHandler)
-        .handler(lastDownloadedHandler)
-        .handler(downloadHandler)
+        .handler(searchHandler)
         .create())
 
     builder.route(packageMatcher()

@@ -35,13 +35,11 @@ public interface ComposerHostedFacet
 
   Content getListJson(String filter) throws IOException;
 
-  Content getProviderJson(String vendor, String project) throws IOException;
+  Content getSearchJson(String filter) throws IOException;
 
   Content getPackageJson(String vendor, String project) throws IOException;
 
   Optional<Content> rebuildPackageJson(String vendor, String project) throws IOException;
-
-  Optional<Content> rebuildProviderJson(String vendor, String project) throws IOException;
 
   @Nullable
   Content getZipball(String path) throws IOException;

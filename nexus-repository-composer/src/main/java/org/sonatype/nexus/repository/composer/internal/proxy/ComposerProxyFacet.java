@@ -53,226 +53,218 @@ import static org.sonatype.nexus.repository.http.HttpMethods.GET;
  */
 @Named
 public class ComposerProxyFacet
-    extends ContentProxyFacetSupport
-{
-  private static final String PACKAGES_JSON = "/packages.json";
+        extends ContentProxyFacetSupport {
+    private static final String PACKAGES_JSON = "/packages.json";
 
-  private static final String LIST_JSON = "/packages/list.json";
+    private static final String LIST_JSON = "/packages/list.json";
 
-  private final ComposerJsonProcessor composerJsonProcessor;
+    private static final String SEARCH_JSON = "/packages/search.json";
 
-  @Inject
-  public ComposerProxyFacet(final ComposerJsonProcessor composerJsonProcessor) {
-    this.composerJsonProcessor = checkNotNull(composerJsonProcessor);
-  }
+    private final ComposerJsonProcessor composerJsonProcessor;
 
-  @Nullable
-  @Override
-  protected Content fetch(Context context, Content stale) throws IOException {
-    try {
-      return super.fetch(context, stale);
-    }
-    catch (NonResolvableProviderJsonException e) {
-      log.debug("Composer provider URL not resolvable: {}", e.getMessage());
-      return null;
-    }
-  }
-
-  // HACK: Workaround for known CGLIB issue, forces an Import-Package for org.sonatype.nexus.repository.config
-  @Override
-  protected void doValidate(final Configuration configuration) throws Exception {
-    super.doValidate(configuration);
-  }
-
-  @Nullable
-  @Override
-  protected Content getCachedContent(final Context context) throws IOException {
-    AssetKind assetKind = context.getAttributes().require(AssetKind.class);
-    Optional<Content> content;
-    switch (assetKind) {
-      case PACKAGES:
-        content = content().get(PACKAGES_JSON);
-        break;
-      case LIST:
-        content = content().get(LIST_JSON);
-        break;
-      case PROVIDER:
-        content = content().get(buildProviderPath(context));
-        break;
-      case PACKAGE:
-        content = content().get(buildPackagePath(context));
-        break;
-      case ZIPBALL:
-        content = content().get(buildZipballPath(context));
-        break;
-      default:
-        throw new IllegalStateException();
+    @Inject
+    public ComposerProxyFacet(final ComposerJsonProcessor composerJsonProcessor) {
+        this.composerJsonProcessor = checkNotNull(composerJsonProcessor);
     }
 
-    return content.orElse(null);
-  }
-
-  @Override
-  protected Content store(final Context context, final Content content) throws IOException {
-    AssetKind assetKind = context.getAttributes().require(AssetKind.class);
-    FluentAsset asset;
-    switch (assetKind) {
-      case PACKAGES:
-        asset = content().put(PACKAGES_JSON, generatePackagesJson(context), assetKind);
-        break;
-      case LIST:
-        asset = content().put(LIST_JSON, content, assetKind);
-      break;
-      case PROVIDER:
-        asset = content().put(buildProviderPath(context), content, assetKind);
-      break;
-      case PACKAGE:
-        asset = content().put(buildPackagePath(context), content, assetKind);
-      break;
-      case ZIPBALL:
-        asset = content().put(buildZipballPath(context), content, assetKind);
-      break;
-      default:
-        throw new IllegalStateException();
-    }
-
-    return asset.download();
-  }
-
-  @Override
-  protected void indicateVerified(final Context context, final Content content, final CacheInfo cacheInfo)
-      throws IOException
-  {
-    AssetKind assetKind = context.getAttributes().require(AssetKind.class);
-    switch (assetKind) {
-      case PACKAGES:
-        content().setCacheInfo(PACKAGES_JSON, content, cacheInfo);
-        break;
-      case LIST:
-        content().setCacheInfo(LIST_JSON, content, cacheInfo);
-        break;
-      case PROVIDER:
-        content().setCacheInfo(buildProviderPath(context), content, cacheInfo);
-        break;
-      case PACKAGE:
-        content().setCacheInfo(buildPackagePath(context), content, cacheInfo);
-        break;
-      case ZIPBALL:
-        content().setCacheInfo(buildZipballPath(context), content, cacheInfo);
-        break;
-      default:
-        throw new IllegalStateException();
-    }
-  }
-
-  @Override
-  protected String getUrl(@Nonnull final Context context) {
-    AssetKind assetKind = context.getAttributes().require(AssetKind.class);
-    switch (assetKind) {
-      case ZIPBALL:
-        return getZipballUrl(context);
-      default:
-        return context.getRequest().getPath().substring(1);
-    }
-  }
-
-  @Nonnull
-  @Override
-  protected CacheController getCacheController(@Nonnull final Context context) {
-    final AssetKind assetKind = context.getAttributes().require(AssetKind.class);
-    return cacheControllerHolder.require(assetKind.getCacheType());
-  }
-
-  private Content generatePackagesJson(final Context context) throws IOException {
-    try {
-      // TODO: Better logging and error checking on failure/non-200 scenarios
-      Request request = new Request.Builder().action(GET).path(LIST_JSON).build();
-      Response response = getRepository().facet(ViewFacet.class).dispatch(request, context);
-      Payload payload = checkNotNull(response.getPayload());
-      return composerJsonProcessor.generatePackagesFromList(getRepository(), payload);
-    }
-    catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-    catch (Exception e) {
-      Throwables.throwIfUnchecked(e);
-      throw new RuntimeException(e);
-    }
-  }
-
-  private String getZipballUrl(final Context context) {
-    try {
-      TokenMatcher.State state = context.getAttributes().require(TokenMatcher.State.class);
-      Map<String, String> tokens = state.getTokens();
-      String vendor = tokens.get(VENDOR_TOKEN);
-      String project = tokens.get(PROJECT_TOKEN);
-      String version = tokens.get(VERSION_TOKEN);
-
-      // try v2 package
-      try {
-        String path = buildPackagePath(vendor, project);
-        Payload payload = getPackagePayload(context, path);
-        if (payload != null) {
-          return composerJsonProcessor.getDistUrlFromPackage(vendor, project, version, payload);
+    @Nullable
+    @Override
+    protected Content fetch(Context context, Content stale) throws IOException {
+        try {
+            return super.fetch(context, stale);
+        } catch (NonResolvableProviderJsonException e) {
+            log.debug("Composer provider URL not resolvable: {}", e.getMessage());
+            return null;
         }
-      }
-      catch (Exception e) {
-        // ignored because we have a fallback
-      }
+    }
 
-      // try v2 package (dev versions)
-      try {
-        String path = buildPackagePathForDevVersions(vendor, project);
-        Payload payload = getPackagePayload(context, path);
-        String url = composerJsonProcessor.getDistUrlFromPackage(vendor, project, version, payload);
-        if (payload != null) {
-          return composerJsonProcessor.getDistUrlFromPackage(vendor, project, version, payload);
+    // HACK: Workaround for known CGLIB issue, forces an Import-Package for org.sonatype.nexus.repository.config
+    @Override
+    protected void doValidate(final Configuration configuration) throws Exception {
+        super.doValidate(configuration);
+    }
+
+    @Nullable
+    @Override
+    protected Content getCachedContent(final Context context) throws IOException {
+        AssetKind assetKind = context.getAttributes().require(AssetKind.class);
+        Optional<Content> content;
+        switch (assetKind) {
+            case PACKAGES:
+                content = content().get(PACKAGES_JSON);
+                break;
+            case LIST:
+                content = content().get(LIST_JSON);
+                break;
+            case SEARCH:
+                content = content().get(SEARCH_JSON);
+                break;
+            case PACKAGE:
+                content = content().get(buildPackagePath(context));
+                break;
+            case ZIPBALL:
+                content = content().get(buildZipballPath(context));
+                break;
+            default:
+                throw new IllegalStateException();
         }
-      }
-      catch (Exception e) {
-        // ignored because we have a fallback
-      }
 
-      // try v1 provider
-      String path = buildProviderPath(vendor, project);
-      Payload payload = getProviderPayload(context, path);
-      if (payload == null) {
-        throw new NonResolvableProviderJsonException(
-            String.format("No provider found for vendor %s, project %s, version %s", vendor, project, version));
-      } else {
-        return composerJsonProcessor.getDistUrl(vendor, project, version, payload);
-      }
+        return content.orElse(null);
     }
-    catch (IOException e) {
-      throw new UncheckedIOException(e);
+
+    @Override
+    protected Content store(final Context context, final Content content) throws IOException {
+        AssetKind assetKind = context.getAttributes().require(AssetKind.class);
+        FluentAsset asset;
+        switch (assetKind) {
+            case PACKAGES:
+                asset = content().put(PACKAGES_JSON, generatePackagesJson(context), assetKind);
+                break;
+            case LIST:
+                asset = content().put(LIST_JSON, content, assetKind);
+                break;
+            case SEARCH:
+                asset = content().put(SEARCH_JSON, content, assetKind);
+                break;
+            case PACKAGE:
+                asset = content().put(buildPackagePath(context), content, assetKind);
+                break;
+            case ZIPBALL:
+                asset = content().put(buildZipballPath(context), content, assetKind);
+                break;
+            default:
+                throw new IllegalStateException();
+        }
+
+        return asset.download();
     }
-    catch (Exception e) {
-      Throwables.throwIfUnchecked(e);
-      throw new RuntimeException(e);
+
+    @Override
+    protected void indicateVerified(final Context context, final Content content, final CacheInfo cacheInfo)
+            throws IOException {
+        AssetKind assetKind = context.getAttributes().require(AssetKind.class);
+        switch (assetKind) {
+            case PACKAGES:
+                content().setCacheInfo(PACKAGES_JSON, content, cacheInfo);
+                break;
+            case LIST:
+                content().setCacheInfo(LIST_JSON, content, cacheInfo);
+                break;
+            case SEARCH:
+                content().setCacheInfo(SEARCH_JSON, content, cacheInfo);
+                break;
+            case PACKAGE:
+                content().setCacheInfo(buildPackagePath(context), content, cacheInfo);
+                break;
+            case ZIPBALL:
+                content().setCacheInfo(buildZipballPath(context), content, cacheInfo);
+                break;
+            default:
+                throw new IllegalStateException();
+        }
     }
-  }
 
-  private ComposerContentFacet content() {
-    return getRepository().facet(ComposerContentFacet.class);
-  }
-
-  private Payload getPackagePayload(final Context context, String path) throws Exception {
-    Request request = new Request.Builder().action(GET).path(path)
-      .attribute(ComposerProviderHandler.DO_NOT_REWRITE, "true").build();
-    Response response = getRepository().facet(ViewFacet.class).dispatch(request, context);
-    return response.getPayload();
-  }
-
-  private Payload getProviderPayload(final Context context, String path) throws Exception {
-    return getPackagePayload(context, path);
-  }
-
-  @VisibleForTesting
-  static class NonResolvableProviderJsonException
-      extends RuntimeException
-  {
-    public NonResolvableProviderJsonException(final String message) {
-      super(message);
+    @Override
+    protected String getUrl(@Nonnull final Context context) {
+        AssetKind assetKind = context.getAttributes().require(AssetKind.class);
+        switch (assetKind) {
+            case ZIPBALL:
+                return getZipballUrl(context);
+            default:
+                return context.getRequest().getPath().substring(1);
+        }
     }
-  }
+
+    @Nonnull
+    @Override
+    protected CacheController getCacheController(@Nonnull final Context context) {
+        final AssetKind assetKind = context.getAttributes().require(AssetKind.class);
+        return cacheControllerHolder.require(assetKind.getCacheType());
+    }
+
+    private Content generatePackagesJson(final Context context) throws IOException {
+        try {
+            // TODO: Better logging and error checking on failure/non-200 scenarios
+            Request request = new Request.Builder().action(GET).path(LIST_JSON).build();
+            Response response = getRepository().facet(ViewFacet.class).dispatch(request, context);
+            Payload payload = checkNotNull(response.getPayload());
+            return composerJsonProcessor.generatePackagesFromList(getRepository(), payload);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (Exception e) {
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getZipballUrl(final Context context) {
+        try {
+            TokenMatcher.State state = context.getAttributes().require(TokenMatcher.State.class);
+            Map<String, String> tokens = state.getTokens();
+            String vendor = tokens.get(VENDOR_TOKEN);
+            String project = tokens.get(PROJECT_TOKEN);
+            String version = tokens.get(VERSION_TOKEN);
+
+            // try v2 package
+            try {
+                String path = buildPackagePath(vendor, project);
+                Payload payload = getPackagePayload(context, path);
+                if (payload != null) {
+                    return composerJsonProcessor.getDistUrlFromPackage(vendor, project, version, payload);
+                }
+            } catch (Exception e) {
+                // ignored because we have a fallback
+            }
+
+            // try v2 package (dev versions)
+            try {
+                String path = buildPackagePathForDevVersions(vendor, project);
+                Payload payload = getPackagePayload(context, path);
+                String url = composerJsonProcessor.getDistUrlFromPackage(vendor, project, version, payload);
+                if (payload != null) {
+                    return composerJsonProcessor.getDistUrlFromPackage(vendor, project, version, payload);
+                }
+            } catch (Exception e) {
+                // ignored because we have a fallback
+            }
+
+            // try v1 provider
+            String path = buildProviderPath(vendor, project);
+            Payload payload = getProviderPayload(context, path);
+            if (payload == null) {
+                throw new NonResolvableProviderJsonException(
+                        String.format("No provider found for vendor %s, project %s, version %s", vendor, project, version));
+            } else {
+                return composerJsonProcessor.getDistUrl(vendor, project, version, payload);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (Exception e) {
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ComposerContentFacet content() {
+        return getRepository().facet(ComposerContentFacet.class);
+    }
+
+    private Payload getPackagePayload(final Context context, String path) throws Exception {
+        Request request = new Request.Builder().action(GET).path(path)
+                .attribute(ComposerProviderHandler.DO_NOT_REWRITE, "true").build();
+        Response response = getRepository().facet(ViewFacet.class).dispatch(request, context);
+        return response.getPayload();
+    }
+
+    private Payload getProviderPayload(final Context context, String path) throws Exception {
+        return getPackagePayload(context, path);
+    }
+
+    @VisibleForTesting
+    static class NonResolvableProviderJsonException
+            extends RuntimeException {
+        public NonResolvableProviderJsonException(final String message) {
+            super(message);
+        }
+    }
 }

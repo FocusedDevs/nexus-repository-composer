@@ -88,13 +88,15 @@ public class ComposerHostedFacetImpl
   }
 
   @Override
-  public Content getProviderJson(final String vendor, final String project) throws IOException {
-    Optional<Content> content = content().get(ComposerPathUtils.buildProviderPath(vendor, project));
-    if (content.isPresent()) {
-      return content.get();
+  public Content getSearchJson(String filter) throws IOException {
+    FluentQuery<FluentComponent> components;
+    if (filter == null || filter.isEmpty()) {
+      components = content().components();
     } else {
-      return rebuildProviderJson(vendor, project).orElse(null);
+      components = queryComponents(filter);
     }
+
+    return composerJsonProcessor.generateListFromComponents(components);
   }
 
   @Override
@@ -106,19 +108,6 @@ public class ComposerHostedFacetImpl
     } else {
       return rebuildPackageJson(vendor, project).orElse(null);
     }
-  }
-
-  @Override
-  public Optional<Content> rebuildProviderJson(final String vendor, final String project) throws IOException {
-    Optional<Content> content = composerJsonProcessor.buildProviderJson(getRepository(), content(), queryComponents(vendor, project));
-    if (content.isPresent()) {
-      content().put(ComposerPathUtils.buildProviderPath(vendor, project), content.get(), AssetKind.PROVIDER);
-    } else {
-      content()
-          .getAsset(ComposerPathUtils.buildProviderPath(vendor, project))
-          .ifPresent(FluentAsset::delete);
-    }
-    return content;
   }
 
   @Override

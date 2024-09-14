@@ -123,27 +123,4 @@ public class ComposerHostedFacetImplTest
     when(composerJsonProcessor.generateListFromComponents(null)).thenReturn(content);
     assertThat(underTest.getListJson("In\\al1d"), is(content));
   }
-
-  @Test
-  public void testGetProviderJson() throws Exception {
-    when(composerContentFacet.get(PROVIDER_PATH)).thenReturn(Optional.of(content));
-    assertThat(underTest.getProviderJson(VENDOR, PROJECT), is(content));
-  }
-
-  @Test
-  public void testBuildProviderJson() throws Exception {
-    ArgumentCaptor<String> filter = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<Map<String, Object>> filterArgs = ArgumentCaptor.forClass(Map.class);
-
-    FluentQuery<FluentComponent> query = mock(FluentQuery.class);
-    when(components.byFilter(filter.capture(), filterArgs.capture())).thenReturn(query);
-    when(composerJsonProcessor.buildProviderJson(repository, composerContentFacet, query))
-        .thenReturn(Optional.of(content));
-
-    Optional<Content> res = underTest.rebuildProviderJson(VENDOR, PROJECT);
-    assertThat(res.isPresent(), is(true));
-    assertThat(res.get(), is(content));
-    assertThat(filter.getValue(), is("namespace = #{filterParams.vendor} AND name = #{filterParams.project}"));
-    assertThat(filterArgs.getValue(), is(ImmutableMap.of("vendor", VENDOR, "project", PROJECT)));
-  }
 }

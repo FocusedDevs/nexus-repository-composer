@@ -23,9 +23,12 @@ import org.sonatype.nexus.blobstore.api.BlobRef;
 import org.sonatype.nexus.common.collect.NestedAttributesMap;
 import org.sonatype.nexus.common.entity.Continuation;
 import org.sonatype.nexus.repository.Repository;
+import org.sonatype.nexus.repository.Type;
 import org.sonatype.nexus.repository.composer.ComposerContentFacet;
 import org.sonatype.nexus.repository.content.AssetBlob;
 import org.sonatype.nexus.repository.content.fluent.*;
+import org.sonatype.nexus.repository.types.HostedType;
+import org.sonatype.nexus.repository.types.ProxyType;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Payload;
 
@@ -142,8 +145,12 @@ public class ComposerJsonProcessorTest
   public void generatePackagesFromList() throws Exception {
     String listJson = readStreamToString(getClass().getResourceAsStream("generatePackagesFromList.list.json"));
     String packagesJson = readStreamToString(getClass().getResourceAsStream("generatePackagesFromList.packages.json"));
+    Type TypeMock = mock(Type.class);
 
     when(repository.getUrl()).thenReturn("http://nexus.repo/base/repo");
+    when(repository.getType()).thenReturn(TypeMock);
+    when(repository.getType().getValue()).thenReturn(HostedType.NAME);
+
     when(payload1.openInputStream()).thenReturn(new ByteArrayInputStream(listJson.getBytes(UTF_8)));
 
     ComposerJsonProcessor underTest = new ComposerJsonProcessor(composerJsonExtractor, composerJsonMinifier);
@@ -155,8 +162,44 @@ public class ComposerJsonProcessorTest
   @Test
   public void generatePackagesFromComponents() throws Exception {
     String packagesJson = readStreamToString(getClass().getResourceAsStream("generatePackagesFromComponents.json"));
+    Type TypeMock = mock(Type.class);
 
     when(repository.getUrl()).thenReturn("http://nexus.repo/base/repo");
+    when(repository.getType()).thenReturn(TypeMock);
+    when(repository.getType().getValue()).thenReturn(HostedType.NAME);
+
+    when(component1.namespace()).thenReturn("vendor1");
+    when(component1.name()).thenReturn("project1");
+    when(component1.version()).thenReturn("version1");
+
+    when(component2.namespace()).thenReturn("vendor2");
+    when(component2.name()).thenReturn("project2");
+    when(component2.version()).thenReturn("version2");
+
+    when(component3.namespace()).thenReturn("vendor1");
+    when(component3.name()).thenReturn("project1");
+    when(component3.version()).thenReturn("version2");
+
+    FluentComponents components = mock(FluentComponents.class);
+    when(components.browse(anyInt(), isNull())).thenReturn(new ContinuationList("con-tkn-001", component1, component2));
+    when(components.browse(anyInt(), eq("con-tkn-001"))).thenReturn(new ContinuationList("con-tkn-002", component3));
+    when(components.browse(anyInt(), eq("con-tkn-002"))).thenReturn(new ContinuationList(""));
+
+    ComposerJsonProcessor underTest = new ComposerJsonProcessor(composerJsonExtractor, composerJsonMinifier);
+
+    Content output = underTest.generatePackagesFromComponents(repository, components);
+
+    assertEquals(packagesJson, readStreamToString(output.openInputStream()), true);
+  }
+
+  @Test
+  public void generatePackagesFromComponentsWithProxyRepo() throws Exception {
+    String packagesJson = readStreamToString(getClass().getResourceAsStream("generatePackagesFromComponentsWithProxyRepo.json"));
+    Type TypeMock = mock(Type.class);
+
+    when(repository.getUrl()).thenReturn("http://nexus.repo/base/repo");
+    when(repository.getType()).thenReturn(TypeMock);
+    when(repository.getType().getValue()).thenReturn(ProxyType.NAME);
 
     when(component1.namespace()).thenReturn("vendor1");
     when(component1.name()).thenReturn("project1");
@@ -192,24 +235,6 @@ public class ComposerJsonProcessorTest
 
     ComposerJsonProcessor underTest = new ComposerJsonProcessor(composerJsonExtractor, composerJsonMinifier);
     Payload output = underTest.rewriteProviderJson(repository, payload1);
-
-    assertEquals(outputJson, readStreamToString(output.openInputStream()), true);
-  }
-
-  @Test
-  public void mergeProviderJson() throws Exception {
-    OffsetDateTime time = OffsetDateTime.of(2008, 5, 15, 12, 30, 0, 0, ZoneOffset.ofHours(-4));
-
-    String inputJson1 = readStreamToString(getClass().getResourceAsStream("mergeProviderJson.input1.json"));
-    String inputJson2 = readStreamToString(getClass().getResourceAsStream("mergeProviderJson.input2.json"));
-    String outputJson = readStreamToString(getClass().getResourceAsStream("mergeProviderJson.output.json"));
-
-    when(repository.getUrl()).thenReturn("http://nexus.repo/base/repo");
-    when(payload1.openInputStream()).thenReturn(new ByteArrayInputStream(inputJson1.getBytes(UTF_8)));
-    when(payload2.openInputStream()).thenReturn(new ByteArrayInputStream(inputJson2.getBytes(UTF_8)));
-
-    ComposerJsonProcessor underTest = new ComposerJsonProcessor(composerJsonExtractor, composerJsonMinifier);
-    Payload output = underTest.mergeProviderJson(repository, Arrays.asList(payload1, payload2), time);
 
     assertEquals(outputJson, readStreamToString(output.openInputStream()), true);
   }
@@ -388,8 +413,12 @@ public class ComposerJsonProcessorTest
     String inputJson1 = readStreamToString(getClass().getResourceAsStream("mergePackagesJson.input1.json"));
     String inputJson2 = readStreamToString(getClass().getResourceAsStream("mergePackagesJson.input2.json"));
     String outputJson = readStreamToString(getClass().getResourceAsStream("mergePackagesJson.output.json"));
+    Type TypeMock = mock(Type.class);
 
     when(repository.getUrl()).thenReturn("http://nexus.repo/base/repo");
+    when(repository.getType()).thenReturn(TypeMock);
+    when(repository.getType().getValue()).thenReturn(HostedType.NAME);
+
     when(payload1.openInputStream()).thenReturn(new ByteArrayInputStream(inputJson1.getBytes(UTF_8)));
     when(payload2.openInputStream()).thenReturn(new ByteArrayInputStream(inputJson2.getBytes(UTF_8)));
 

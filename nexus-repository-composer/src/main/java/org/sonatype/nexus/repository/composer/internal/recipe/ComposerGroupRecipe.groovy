@@ -16,7 +16,8 @@ import org.sonatype.nexus.repository.composer.AssetKind
 import org.sonatype.nexus.repository.composer.ComposerFormat
 import org.sonatype.nexus.repository.composer.internal.group.ComposerGroupPackageJsonHandler
 import org.sonatype.nexus.repository.composer.internal.group.ComposerGroupPackagesJsonHandler
-import org.sonatype.nexus.repository.composer.internal.group.ComposerGroupProviderJsonHandler
+import org.sonatype.nexus.repository.composer.internal.group.ComposerGroupSearchHandler
+import org.sonatype.nexus.repository.composer.internal.group.ComposerGroupSearchJsonHandler
 
 import javax.annotation.Nonnull
 import javax.inject.Inject
@@ -55,7 +56,7 @@ class ComposerGroupRecipe
   ComposerGroupPackagesJsonHandler packagesJsonHandler
 
   @Inject
-  ComposerGroupProviderJsonHandler providerJsonHandler
+  ComposerGroupSearchHandler searchJsonHandler
 
   @Inject
   ComposerGroupPackageJsonHandler packageJsonHandler
@@ -91,13 +92,13 @@ class ComposerGroupRecipe
         .handler(packagesJsonHandler)
         .create())
 
-    builder.route(providerMatcher()
+    builder.route(searchMatcher()
         .handler(timingHandler)
-        .handler(assetKindHandler.rcurry(AssetKind.PROVIDER))
+        .handler(assetKindHandler.rcurry(AssetKind.SEARCH))
         .handler(securityHandler)
         .handler(exceptionHandler)
         .handler(handlerContributor)
-        .handler(providerJsonHandler)
+        .handler(searchJsonHandler)
         .create())
 
     builder.route(packageMatcher()

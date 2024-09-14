@@ -44,13 +44,6 @@ public class ComposerMaintenanceFacet
     } catch (IOException e) {
       // update failed
     }
-    try {
-      if (!composerHosted().rebuildProviderJson(vendor, project).isPresent()) {
-        deletedPaths.add(ComposerPathUtils.buildProviderPath(vendor, project));
-      }
-    } catch (IOException e) {
-      // update failed
-    }
 
     return deletedPaths.build();
   }

@@ -32,18 +32,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 @Named
 @Singleton
-public class ComposerGroupProviderJsonHandler
+public class ComposerGroupSearchJsonHandler
     extends ComposerGroupMergingHandler
 {
   private final ComposerJsonProcessor composerJsonProcessor;
 
   @Inject
-  public ComposerGroupProviderJsonHandler(final ComposerJsonProcessor composerJsonProcessor) {
+  public ComposerGroupSearchJsonHandler(final ComposerJsonProcessor composerJsonProcessor) {
     this.composerJsonProcessor = checkNotNull(composerJsonProcessor);
   }
 
   @Override
   protected Content merge(final Repository repository, final List<Payload> payloads) throws IOException {
-    return composerJsonProcessor.mergeProviderJson(repository, payloads, OffsetDateTime.now());
+    return composerJsonProcessor.mergeSearchJson(repository, payloads);
   }
 }
