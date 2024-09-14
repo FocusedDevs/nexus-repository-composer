@@ -19,12 +19,24 @@
 ### Building
 
 #### Build with Docker
+Build with docker buildx tools:
 
-    docker buildx build --platform linux/arm64 -t nexus-repository-composer .
+    docker buildx build --platform linux/amd64,linux/arm64 -t nexus-repository-composer .
+
+Or with docker compose:
+
+    docker compose -p nexus -f ./docker-compose.yml build
 
 #### Run as a Docker container
+Our Docker image is based on the latest version of Nexus + the composer plugin, built with JDK 17 and fully compatible with the new Nexus versions!
 
-    docker run -d -p 8081:8081 --name nexus-repository-composer nexus-repository-composer 
+Can be run with:
+
+    docker run -d -p 8081:8081 --name nexus-repository-composer ghcr.io/focuseddevs/nexus-repository-composer:latest 
+
+Or with docker compose:
+
+    docker compose -f ./docker-compose.yml -p nexus up -d
 
 The application will now be available from your browser at http://localhost:8081
 
@@ -66,7 +78,7 @@ Your composer.json shoudl have a block like this one:
 
 ## Installing the plugin
 
-You can download published KAR artifacts from our [Focused Devs Packages Section](https://github.com/FocusedDevs/nexus-repository-composer/packages)
+You can download published KAR artifacts from our [Focused Devs Packages Section](https://github.com/FocusedDevs/nexus-repository-composer/packages/2254924)
 
 Copy the `nexus-repository-composer-<version>-bundle.kar` file into the `<nexus_dir>/deploy` folder for your Nexus Repository installation.
 
