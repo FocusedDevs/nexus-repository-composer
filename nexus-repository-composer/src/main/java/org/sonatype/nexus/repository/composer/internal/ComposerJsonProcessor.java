@@ -231,7 +231,7 @@ public class ComposerJsonProcessor {
         }
 
         Map<String, Object> packagesJson = new LinkedHashMap<>();
-        packagesJson.put("results", packages.stream().sorted().collect(Collectors.toList()) );
+        packagesJson.put("results", new ArrayList<>(packages));
         packagesJson.put("total", components.count());
 
         return new Content(new StringPayload(mapper.writeValueAsString(packagesJson), ContentTypes.APPLICATION_JSON));
@@ -242,12 +242,17 @@ public class ComposerJsonProcessor {
 
         componentJson.put("name", component.namespace() + "/" + component.name());
         componentJson.put("description", "");
-        componentJson.put("url", component.repository().getUrl());
-        componentJson.put("repository", component.repository().getName());
+        componentJson.put("url", this.buildComponentUrl(component));
         componentJson.put("downloads", "0");
         componentJson.put("favers", "0");
 
         return componentJson;
+    }
+
+    private String buildComponentUrl(FluentComponent component) {
+        String serverUrl = component.repository().getUrl();
+        serverUrl = serverUrl.replace("repository/" + component.repository().getName() , "");
+        return serverUrl + "#browse/browse:" + component.repository().getName() + ":" + component.namespace() + "/" + component.name();
     }
 
     /**
