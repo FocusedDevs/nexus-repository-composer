@@ -16,6 +16,7 @@ import org.sonatype.nexus.repository.composer.AssetKind
 import org.sonatype.nexus.repository.composer.ComposerFormat
 import org.sonatype.nexus.repository.composer.internal.proxy.ComposerPackageHandler
 import org.sonatype.nexus.repository.composer.internal.proxy.ComposerProxyFacet
+import org.sonatype.nexus.repository.composer.internal.proxy.ComposerSearchHandler
 
 import javax.annotation.Nonnull
 import javax.inject.Inject
@@ -61,6 +62,9 @@ class ComposerProxyRecipe
 
   @Inject
   ProxyHandler proxyHandler
+
+  @Inject
+  ComposerSearchHandler searchHandler
 
   @Inject
   Provider<HttpClientFacet> httpClientFacet
@@ -126,7 +130,7 @@ class ComposerProxyRecipe
         .handler(conditionalRequestHandler)
         .handler(partialFetchHandler)
         .handler(contentHeadersHandler)
-        .handler(proxyHandler)
+        .handler(searchHandler)
         .create())
 
     builder.route(packageMatcher()

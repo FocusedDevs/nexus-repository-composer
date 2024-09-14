@@ -16,6 +16,7 @@ import org.sonatype.nexus.repository.composer.AssetKind
 import org.sonatype.nexus.repository.composer.ComposerFormat
 import org.sonatype.nexus.repository.composer.internal.group.ComposerGroupPackageJsonHandler
 import org.sonatype.nexus.repository.composer.internal.group.ComposerGroupPackagesJsonHandler
+import org.sonatype.nexus.repository.composer.internal.group.ComposerGroupSearchHandler
 import org.sonatype.nexus.repository.composer.internal.group.ComposerGroupSearchJsonHandler
 
 import javax.annotation.Nonnull
@@ -55,7 +56,7 @@ class ComposerGroupRecipe
   ComposerGroupPackagesJsonHandler packagesJsonHandler
 
   @Inject
-  ComposerGroupSearchJsonHandler searchJsonHandler
+  ComposerGroupSearchHandler searchJsonHandler
 
   @Inject
   ComposerGroupPackageJsonHandler packageJsonHandler

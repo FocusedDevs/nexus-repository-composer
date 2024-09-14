@@ -15,6 +15,7 @@ package org.sonatype.nexus.repository.composer.internal.recipe
 import org.sonatype.nexus.repository.composer.ComposerFormat
 import org.sonatype.nexus.repository.composer.internal.hosted.ComposerHostedDownloadHandler
 import org.sonatype.nexus.repository.composer.ComposerHostedFacet
+import org.sonatype.nexus.repository.composer.internal.hosted.ComposerHostedSearchHandler
 import org.sonatype.nexus.repository.composer.internal.hosted.ComposerHostedUploadHandler
 import org.sonatype.nexus.repository.view.handlers.LastDownloadedHandler
 
@@ -61,6 +62,9 @@ class ComposerHostedRecipe
 
   @Inject
   ComposerHostedDownloadHandler downloadHandler
+
+  @Inject
+  ComposerHostedSearchHandler searchHandler
 
   @Inject
   ComposerHostedRecipe(@Named(HostedType.NAME) final Type type, @Named(ComposerFormat.NAME) final Format format) {
@@ -117,7 +121,7 @@ class ComposerHostedRecipe
         .handler(conditionalRequestHandler)
         .handler(partialFetchHandler)
         .handler(contentHeadersHandler)
-        .handler(downloadHandler)
+        .handler(searchHandler)
         .create())
 
     builder.route(packageMatcher()

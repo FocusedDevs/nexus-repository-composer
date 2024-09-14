@@ -15,6 +15,7 @@ package org.sonatype.nexus.repository.composer.internal;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.hash.Hashing;
+import groovy.json.JsonOutput;
 import org.apache.commons.lang3.StringUtils;
 import org.sonatype.nexus.blobstore.api.Blob;
 import org.sonatype.nexus.common.entity.Continuation;
@@ -22,6 +23,7 @@ import org.sonatype.nexus.common.hash.HashAlgorithm;
 import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.composer.ComposerContentFacet;
 import org.sonatype.nexus.repository.content.AssetBlob;
+import org.sonatype.nexus.repository.content.Component;
 import org.sonatype.nexus.repository.content.fluent.FluentAsset;
 import org.sonatype.nexus.repository.content.fluent.FluentComponent;
 import org.sonatype.nexus.repository.content.fluent.FluentComponents;
@@ -215,6 +217,37 @@ public class ComposerJsonProcessor {
         Map<String, Object> packagesJson = singletonMap(PACKAGE_NAMES_KEY, packages.stream().sorted().collect(Collectors.toList()));
 
         return new Content(new StringPayload(mapper.writeValueAsString(packagesJson), ContentTypes.APPLICATION_JSON));
+    }
+
+    public Content generateSearchFromComponents(final Repository repository, final FluentComponents components) throws IOException {
+
+        Set<Map<String, String>> packages = new HashSet<>();
+        if (components != null) {
+            Continuation<FluentComponent> comps = components.browse(PAGE_SIZE, null);
+            while (!comps.isEmpty()) {
+                comps.stream().map(this::buildComponentJson).forEach(packages::add);
+                comps = components.browse(PAGE_SIZE, comps.nextContinuationToken());
+            }
+        }
+
+        Map<String, Object> packagesJson = new LinkedHashMap<>();
+        packagesJson.put("results", packages.stream().sorted().collect(Collectors.toList()) );
+        packagesJson.put("total", components.count());
+
+        return new Content(new StringPayload(mapper.writeValueAsString(packagesJson), ContentTypes.APPLICATION_JSON));
+    }
+
+    private Map buildComponentJson(FluentComponent component) {
+        Map<String, Object> componentJson = new LinkedHashMap<>();
+
+        componentJson.put("name", component.namespace() + "/" + component.name());
+        componentJson.put("description", "");
+        componentJson.put("url", component.repository().getUrl());
+        componentJson.put("repository", component.repository().getName());
+        componentJson.put("downloads", "0");
+        componentJson.put("favers", "0");
+
+        return componentJson;
     }
 
     /**
