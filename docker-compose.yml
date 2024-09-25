@@ -3,19 +3,15 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    image: nexus-repository-composer
+      platforms:
+        - "linux/amd64"
+        - "linux/arm64"
+      tags:
+        - ghcr.io/focuseddevs/nexus-repository-composer:latest
+        - nexus-repository-composer:latest
+
+    image: ghcr.io/focuseddevs/nexus-repository-composer:latest
     ports:
       - "8081:8081"
     volumes:
       - ./nexus-data:/nexus-data
-  composer:
-    image: composer/composer
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
-    command: /bin/bash
-    working_dir: /app
-    volumes:
-      - ./app:/app
-    depends_on:
-      nexus:
-        condition: service_started
