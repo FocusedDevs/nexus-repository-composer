@@ -7,7 +7,7 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - "./nexus-data:/nexus-data"
+      - ./nexus-data:/nexus-data
   composer:
     image: composer/composer
     stdin_open: true # docker run -i

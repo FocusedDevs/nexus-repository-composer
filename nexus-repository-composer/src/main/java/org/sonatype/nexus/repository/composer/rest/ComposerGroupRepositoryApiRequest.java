@@ -1,6 +1,6 @@
 package org.sonatype.nexus.repository.composer.rest;
 
-import org.sonatype.nexus.repository.composer.internal.ComposerFormat;
+import org.sonatype.nexus.repository.composer.ComposerFormat;
 import org.sonatype.nexus.repository.rest.api.model.GroupAttributes;
 import org.sonatype.nexus.repository.rest.api.model.GroupRepositoryApiRequest;
 import org.sonatype.nexus.repository.rest.api.model.StorageAttributes;
