@@ -96,6 +96,7 @@ public class ComposerProxyIT
   private static final String PACKAGE_NAME = COMPONENT_NAME + EXTENSION_JSON;
 
   private static final String VALID_PACKAGE_URL = PACKAGE_BASE_PATH + PACKAGE_NAME;
+  private static final String COMPOSER_TEST_PROXY = "composer-test-proxy";
 
   private static final long FILE_SIZE_ZIPBALL = 6225L;
 
@@ -213,5 +214,26 @@ public class ComposerProxyIT
   @After
   public void tearDown() throws Exception {
     server.stop();
+  // TODO: Dude, this test, what the heck! It's completely wacky, someone needs to look at this
   }
+
+  @Test
+  public void checkRestAPI() throws Exception {
+    assertThat(status(proxyClient.get("/service/rest/v1/repositories")), is(HttpStatus.OK));
+  }
+
+  @Test
+  public void badPutProxyConfigurationByAPI() throws Exception {
+    assertThat(proxyClient.put("/service/rest/v1/repositories/composer/proxy/" + COMPOSER_TEST_PROXY, "bad request"), is(HttpStatus.BAD_REQUEST));
+  }
+
+  @Test
+  public void getAndUpdateProxyConfigurationByAPI() throws Exception {
+    // given
+    int port = server.getPort();
+    JsonObject expected = new JsonParser().parse("{\"name\":\"composer-test-proxy\",\"format\":\"composer\",\"online\":true,\"storage\":{\"blobStoreName\":\"default\",\"strictContentTypeValidation\":true},\"cleanup\":null,\"proxy\":{\"remoteUrl\":\"http://localhost:" + port + "\",\"contentMaxAge\":1440,\"metadataMaxAge\":1440},\"negativeCache\":{\"enabled\":true,\"timeToLive\":1440},\"httpClient\":{\"blocked\":false,\"autoBlock\":false,\"connection\":{\"retries\":null,\"userAgentSuffix\":null,\"timeout\":null,\"enableCircularRedirects\":false,\"enableCookies\":false,\"useTrustStore\":false},\"authentication\":null},\"routingRuleName\":null,\"type\":\"proxy\"}").getAsJsonObject();
+
+    getAndUpdateConfig(expected, COMPOSER_TEST_PROXY, "proxy", proxyClient);
+  }
+
 }
